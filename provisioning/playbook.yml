@@ -17,7 +17,6 @@
       name: ezp
       user: ezp
       pass: ezp
-      charset: utf8
 
     php:
       timezone: Europe/Lisbon

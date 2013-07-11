@@ -4,5 +4,5 @@
 - yum: pkg=MySQL-python state=present
 
 # create an ezp:ezp user and an ezp table:
-- mysql_db: name=${database.name} encoding=${database.charset} state=present
+- mysql_db: name=${database.name} encoding=utf8 state=present
 - mysql_user: name=${database.user} password=${database.pass} priv=ezp.*:ALL state=present
