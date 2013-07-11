@@ -28,7 +28,11 @@
 # by using a custom module and pecl-list (to ensure presence,
 # and version consistency)
 - name: PHP | Install extensions (PECL)
-  command: pecl install ${item} creates=/usr/lib64/php/modules/${item}.so
+  # this is horrible, but works as a temporary workaround for pecl-install's
+  # unskippable prompts for some extensions, like imagick and apc
+  # a module can be developed to interface with pecl, for more reliable
+  # module installation.
+  shell: printf "\n\n\n\n\n\n\n\n\n\n\n\n\n" | sudo pecl install ${item} creates=/usr/lib64/php/modules/${item}.so
   with_items:
     - xdebug
     - imagick
