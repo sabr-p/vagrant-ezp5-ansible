@@ -19,11 +19,12 @@
       pass: ezp
 
     php:
-      timezone: Europe/Lisbon
+      timezone: Europe/Oslo
 
     ezpublish:
       # hostname to use for the ezpublish virtual host:
       hostname: ezp5.dev.vagrant
+      admin_hostname: admin.ezp5.dev.vagrants
 
       # location of the ezpublish project, relative to www.root
       location: ezpublish5
@@ -38,19 +39,22 @@
 
     # httpd variables:
     www:
-      root: /var/www
+      root: /var/www/html
 
   tasks:
     # install essential packages:
     - name: Global | Install base packages
       yum: pkg=$item state=present
       with_items:
+        - httpd
+        - httpd-devel
         - mysql
         - mysql-server
         - php
+        - php-cli
         - php-devel
-        - php-mysql
-        - php-pear
+        - ntpd
+        - curl.x68_64
       tags: [packages]
 
     # set httpd and mysql-server to launch automatically at boot
@@ -63,14 +67,14 @@
     - service: name=$item  state=started
       with_items: [httpd, mysqld]
 
-    # open ports 80, 8080, 443, 110 and 143
+    # open ports 80, 8080, 443, 110 and 143, 9000
     - name: Global | Open ports (80, 8080, 443, 110, 143)
       lineinfile: dest=/etc/sysconfig/iptables
                   line="-I INPUT 5 -m tcp -p tcp --dport ${item} -j ACCEPT"
                   regexp="\-dport ${item} \-j"
                   insertbefore="^COMMIT$"
                   state=present
-      with_items: [80, 8080, 443, 110, 143]
+      with_items: [80, 8080, 443, 110, 143, 9000]
       tags: [network]
       notify:
         - restart iptables

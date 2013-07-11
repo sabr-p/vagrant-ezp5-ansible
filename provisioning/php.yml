@@ -12,11 +12,22 @@
     - automake
     - pcre-devel
 
+    # Useful/required php extensions:
+    - php-gd
+    - php-pecl-apc
+    - php-process
+    - php-mysql
+    - php-pear
+
     # Symfony2 / eZ Publish 5 requirements:
     - php-xml
     - php-mbstring
     - ImageMagick
     - ImageMagick-devel
+    - ImageMagick-perl
+
+    # eZ Find:
+    - java-1.6.0-openjdk.x86_64
   tags: [packages, php_packages]
 
 - name: PHP | Update PEAR channels
@@ -61,5 +72,6 @@
 
 # Download the latest version of composer, and place it somewhere in the $PATH
 - name: PHP | Download Composer (/usr/local/bin/composer)
-  get_url: url=http://getcomposer.org/composer.phar dest=/usr/local/bin/composer
-- file: path=/usr/local/bin/composer mode=0777
+  get_url: url=http://getcomposer.org/composer.phar dest=/usr/local/bin/composer.phar
+- file: path=/usr/local/bin/composer.phar mode=0777
+- file: path=/usr/local/bin/composer src=/usr/local/bin/composer.phar state=link
