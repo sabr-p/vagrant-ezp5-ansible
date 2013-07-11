@@ -53,8 +53,8 @@
         - php
         - php-cli
         - php-devel
-        - ntpd
-        - curl.x68_64
+        - ntpdate.x86_64
+        - curl.x86_64
       tags: [packages]
 
     # set httpd and mysql-server to launch automatically at boot
