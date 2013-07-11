@@ -12,9 +12,11 @@ Vagrant.configure("2") do |config|
   # using a specific IP.
   config.vm.network :private_network, ip: "192.168.11.226"
 
-  # Sync the ezpublish 5.x project root to a local folder
-  # config.vm.synced_folder "sync", "/var/www", :nfs => true
-
+  # Increase machine memory:
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+  end
+  
   # Enable Ansible as the provisioner for this machine:
   config.vm.provision :ansible do |ansible|
     ansible.inventory_file = "provisioning/hosts"
