@@ -1,0 +1,31 @@
+# Provisioning instructions for setting up an ezpublish 5.x project
+# under Apache.
+
+# get rid of the default welcome.conf virtual host:
+- file: path=/etc/httpd/conf.d/welcome.conf state=absent
+
+# add host entry, and we're done!
+- lineinfile: line="127.0.0.1 ${ezpublish.hostname}" regexp="^127.0.0.1 ${ezpublish.hostname}$" state=present dest=/etc/hosts #"
+  notify:
+    - restart httpd
+
+# download the ezpublish tarball, extract it and copy it to the expected project location:
+- get_url: url=${ezpublish.archive_url} dest=${www.root}/ezpublish_archive.tar.gz
+- command: tar zxf ezpublish_archive.tar.gz chdir=${www.root} creates=${www.root}/${ezpublish.archive_dir}
+
+# the directory is copied and not moved so that we get a stored version of the extracted
+# archive, for idempotent provisioning:
+- command: cp -r ${ezpublish.archive_dir} ${www.root}/${ezpublish.location}
+           chdir=${www.root} creates=${www.root}/${ezpublish.location}
+
+# set permissions. since this is a development machine, there's no problem with using
+# chmod for this effect; and run the initial console commands to get a working ezp instance
+- shell: setfacl ${item.flags} -m u:${item.primary}:rwx -m u:${item.secondary}:rwx ezpublish/{cache,logs,config} ezpublish_legacy/{design,extension,settings,var} web
+         chdir=${www.root}/${ezpublish.location}
+  with_items:
+    - { flags: -R,  primary: apache, secondary: apache }
+    - { flags: -dR, primary: apache, secondary: vagrant }
+
+- command: php ezpublish/console assets:install --symlink web                     chdir=${www.root}/${ezpublish.location}
+- command: php ezpublish/console ezpublish:legacy:assets_install --symlink web    chdir=${www.root}/${ezpublish.location}
+- command: php ezpublish/console assetic:dump --env=${ezpublish.environment} web  chdir=${www.root}/${ezpublish.location}

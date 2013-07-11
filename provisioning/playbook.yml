@@ -1,0 +1,93 @@
+# Provisioning playbook for an eZ Publish 5.x development server
+# 
+# Reference documentation:
+# http://www.ansibleworks.com/docs/playbooks.html
+# http://www.ansibleworks.com/docs/bestpractices.html
+# http://www.ansibleworks.com/docs/modules.html
+# https://github.com/ansible/ansible-examples
+#
+# @author Filipe Dobreira <filipe.dobreira@cleverti.com>
+
+- hosts: all
+  user: vagrant
+  sudo: yes
+  vars:
+    # mysql variables:
+    database:
+      name: ezp
+      user: ezp
+      pass: ezp
+      charset: utf8
+
+    php:
+      timezone: Europe/Lisbon
+
+    ezpublish:
+      # hostname to use for the ezpublish virtual host:
+      hostname: ezp5.dev.vagrant
+
+      # location of the ezpublish project, relative to www.root
+      location: ezpublish5
+
+      # environment setting for the ezpublish project (by default, prod or dev)
+      environment: dev
+
+      # a url to the installation archive (tar.gz) for the ezpublish version to install
+      archive_url: http://share.ez.no/content/download/151343/893911/version/1/file/ezpublish5_community_project-2013.06-gpl-full.tar.gz
+      # the name of the archive containing everything inside the archive:
+      archive_dir: ezpublish5_community_project-2013.6-gpl-full
+
+    # httpd variables:
+    www:
+      root: /var/www
+
+  tasks:
+    # install essential packages:
+    - yum: pkg=$item state=present
+      with_items:
+        - mysql
+        - mysql-server
+        - php
+        - php-devel
+        - php-mysql
+        - php-pear
+      tags: [packages]
+
+    # set httpd and mysql-server to launch automatically at boot
+    - command: /sbin/chkconfig httpd on
+    - command: /sbin/chkconfig --add mysqld
+    - command: /sbin/chkconfig mysqld on
+
+    # start both services:
+    - service: name=$item  state=started
+      with_items: [httpd, mysqld]
+
+    # open ports 80, 8080, 443, 110 and 143
+    - name: open ports
+      lineinfile: dest=/etc/sysconfig/iptables
+                  line="iptables -I INPUT 5 -m tcp -p tcp --dport ${item} -j ACCEPT"
+                  regexp="\-dport ${item} \-j"
+                  insertbefore="^COMMIT$"
+                  state=present
+      with_items: [80, 8080, 443, 110, 143]
+      tags: [network]
+      notify:
+        - restart iptables
+
+    # configure mysql:
+    - include: mysql.yml
+
+    # configure php:
+    - include: php.yml
+
+    # configure the ezpublish project:
+    - include: ezpublish.yml
+
+    # configure the motd:
+    - template: src=templates/motd.j2 dest=/etc/motd
+
+  handlers:
+    - name: restart iptables
+      service: name=iptables state=restarted
+    - name: restart httpd
+      service: name=httpd state=restarted

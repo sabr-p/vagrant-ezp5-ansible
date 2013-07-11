@@ -1,0 +1,16 @@
+eZ Publish 5.x Vagrant Box, provisioned with Ansible
+
+MySQL:
+ default database: {{ database.name }}
+ default db user:  {{ database.user }}
+ default db user password: {{ database.pass }}
+
+Apache/httpd:
+ www root: {{ www.root }}
+
+eZ Publish 5 Project:
+ location: {{ www.root }}/{{ ezpublish.location }}
+ hostname: {{ ezpublish.hostname }}
+ environment: {{ ezpublish.environment }}
+
+ Built @ cleverti by Filipe Dobreira

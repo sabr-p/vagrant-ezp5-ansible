@@ -1,0 +1,52 @@
+# Provisioning instructions for PHP, PHP extensions and
+# related utilities
+
+# configure PHP extensions and related components:
+- yum: pkg=${item} state=present
+  with_items: 
+    # Essentials for building pecl extensions:
+    - gcc
+    - gcc-c++
+    - autoconf
+    - automake
+    - pcre-devel
+
+    # Symfony2 / eZ Publish 5 requirements:
+    - php-xml
+    - php-mbstring
+    - ImageMagick
+    - ImageMagick-devel
+  tags: [packages, php_packages]
+
+# Use PECL to install php extensions:
+# NOTE: there is currently no pecl module for ansible, so the
+# check for idempotence isn't ideal. This can easily be fixed
+# by using a custom module and pecl-list (to ensure presence,
+# and version consistency)
+- command: pecl install ${item} creates=/usr/lib64/php/modules/${item}.so
+  with_items:
+    - xdebug
+    - imagick
+    - apc
+  tags: [php_packages]
+
+# Enable zend extensions
+- shell: echo zend_extension=/usr/lib64/php/modules/${item}.so | sudo tee /etc/php.d/${item}.ini
+         creates=/etc/php.d/${item}.ini
+  with_items: [xdebug]
+  tags: [php_config]
+
+# Enable extensions
+- shell: echo extension=/usr/lib64/php/modules/${item}.so | sudo tee /etc/php.d/${item}.ini
+         creates=/etc/php.d/${item}.ini
+  with_items: [imagick, apc]
+  tags: [php_config]
+
+# Set additional PHP settings through a custom .ini template:
+- template: src=templates/php_custom.ini.j2 dest=/etc/php.d/config_custom.ini
+  notify:
+    - restart httpd
+
+# Download the latest version of composer, and place it somewhere in the $PATH
+- get_url: url=http://getcomposer.org/composer.phar dest=/usr/local/bin/composer
+- file: path=/usr/local/bin/composer mode=0777
