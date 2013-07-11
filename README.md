@@ -16,6 +16,7 @@ Prototype development machine for eZ Publish 5.x, provisioned with Ansible.
 
 - Vagrant (http://vagrantup.com)
 - Ansible (http://www.ansibleworks.com/downloads/)
+- VirtualBox (https://www.virtualbox.org/) or VMWare (http://www.vmware.com/)
 
 ## Getting started:
 
