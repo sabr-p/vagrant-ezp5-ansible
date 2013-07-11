@@ -1,8 +1,11 @@
 # Provisioning instructions for MySQL
 
 # MySQL-python is a dependency for mysql_db & mysql_user:
-- yum: pkg=MySQL-python state=present
+- name: MySQL | Install dependencies
+  yum: pkg=MySQL-python state=present
 
 # create an ezp:ezp user and an ezp table:
-- mysql_db: name=${database.name} encoding=utf8 state=present
-- mysql_user: name=${database.user} password=${database.pass} priv=ezp.*:ALL state=present
+- name: MySQL | Setup default database (${database.name})
+  mysql_db: name=${database.name} encoding=utf8 state=present
+- name: MySQL | Setup default user (${database.user}:${database.pass})
+  mysql_user: name=${database.user} password=${database.pass} priv=ezp.*:ALL state=present

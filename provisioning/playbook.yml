@@ -42,7 +42,8 @@
 
   tasks:
     # install essential packages:
-    - yum: pkg=$item state=present
+    - name: Global | Install base packages
+      yum: pkg=$item state=present
       with_items:
         - mysql
         - mysql-server
@@ -53,7 +54,8 @@
       tags: [packages]
 
     # set httpd and mysql-server to launch automatically at boot
-    - command: /sbin/chkconfig httpd on
+    - name: Global | Enable MySQL and Httpd 
+      command: /sbin/chkconfig httpd on
     - command: /sbin/chkconfig --add mysqld
     - command: /sbin/chkconfig mysqld on
 
@@ -62,7 +64,7 @@
       with_items: [httpd, mysqld]
 
     # open ports 80, 8080, 443, 110 and 143
-    - name: open ports
+    - name: Global | Open ports (80, 8080, 443, 110, 143)
       lineinfile: dest=/etc/sysconfig/iptables
                   line="iptables -I INPUT 5 -m tcp -p tcp --dport ${item} -j ACCEPT"
                   regexp="\-dport ${item} \-j"
@@ -83,7 +85,8 @@
     - include: ezpublish.yml
 
     # configure the motd:
-    - template: src=templates/motd.j2 dest=/etc/motd
+    - name: Global | Generate MOTD
+      template: src=templates/motd.j2 dest=/etc/motd
 
   handlers:
     - name: restart iptables
