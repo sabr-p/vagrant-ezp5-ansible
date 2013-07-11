@@ -8,6 +8,9 @@ Vagrant.configure("2") do |config|
   config.vm.box     = "centos-64-x64-vbox4210"
   config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-vbox4210.box"
 
+  # Set the machine's hostname:
+  config.vm.hostname = "ezp5.vagrant"
+
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
   config.vm.network :private_network, ip: "192.168.11.226"
@@ -16,7 +19,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "1024"]
   end
-  
+
   # Enable Ansible as the provisioner for this machine:
   config.vm.provision :ansible do |ansible|
     ansible.inventory_file = "provisioning/hosts"
